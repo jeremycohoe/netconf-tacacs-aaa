@@ -1,21 +1,27 @@
 # netconf-tacacs-aaa
-netconf-tacacs-aaa example
 
+## Introduction
 An example to allow local login on the console line, and NETCONF to authenticate and get authorization from TACACS via Cisco ISE
 
-Thanks to Ioannis @mythryll and Joe Clarke @ Cisco, and the entire DEVNET 500 group for the example :)
+Thanks to Ioannis @mythryll and Joe Clarke @ Cisco, and the entire DEVNET 500 group for the discussions.
 
-For IOS-XE devices that need to be configured with netconf, the IOS-XE 16.x and later documentation includes a dedicated section on Programmability that details how to setup the IOS-XE device for netconf, for example:
-https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/173/b_173_programmability_cg/configuring_yang_datamodel.html
-The necessary commands are summarized in the respective section https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/173/b_173_programmability_cg/configuring_yang_datamodel.html#privilege-to-use-netconf , however no prevision is made for setups that are common in production networks, where device access is often based on AAA mechanisms like a group of TACACS+/ISE servers. This has been the same in the IOS-XE documentation ever since netconf support was included, going as back as v.16.6.
-A similar section is also available in the documentation for netconf and programmability support in developer.cisco.com : https://developer.cisco.com/docs/ios-xe/#!enabling-netconf-on-ios-xe
-However in this case there is a section dedicated to integration with AAA and TACACS+/ISE:
-https://developer.cisco.com/docs/ios-xe/#!ios-xe-aaa-integration-with-netconf-and-restconf 
+For IOS-XE devices that need to be configured with netconf, the IOS-XE 16.x and later documentation includes a dedicated section on Programmability that [details how to setup the IOS-XE device for netconf](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/173/b_173_programmability_cg/configuring_yang_datamodel.html
+)
+
+The necessary commands are [summarized in the respective section](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/173/b_173_programmability_cg/configuring_yang_datamodel.html#privilege-to-use-netconf) however no prevision is made for setups that are common in production networks, where device access is often based on AAA mechanisms like a group of TACACS+/ISE servers. This has been the same in the IOS-XE documentation ever since netconf support was included, going as back as v.16.6.
+
+A similar section is also available in the documentation for [netconf and programmability support in developer.cisco.com](https://developer.cisco.com/docs/ios-xe/#!enabling-netconf-on-ios-xe)
+
+However in this case there is a [section dedicated to integration with AAA and TACACS+/ISE](https://developer.cisco.com/docs/ios-xe/#!ios-xe-aaa-integration-with-netconf-and-restconf)
+
 The example in the page does not include password protected or authorized access to the console. If only login authentication is needed then the change from none to local-if-authenticated should do the trick but for authorizing commands, it gets a little more complicated.
+
+## Purpose
+
 The purpose of this text is to define 2 separate example scenarios and display the necessary IOS-XE config snippets to deploy in order to satisfy the respective requirements, for anyone that needs such a reference.
 The base for this text has been a discussion that evolved in the Devnet 500 webex space between Ioannis Theodoridis @mythryll from the Bank of Greece and Joe Clarke from Cisco, with the contribution of Stuart Clark and Jeremy Cohoe. The issue the led to the discussion was brought forward by Katerina Dardoufa also from Bank of Greece. Thanks again, Joe, Jeremy and Stuart.
 
-Base Scenario:
+## Base Scenario
 In a production network, IOS-XE devices are already setup with TACACS+ (ISE) access for network administrators. A non default profile (OTHERGROUP) is defined for the AAA admin access.
 It is decided that Netconf should be deployed in order to allow for MDT assisted performance monitoring.
 As implied by the documentation in developer.cisco.com, it is necessary to define the default AAA profile for netconf authentication to work with ISE based user access.
@@ -26,7 +32,7 @@ username example-name privilege 15 password example_password
 Also don't forget that providing user passwords in config in unencrypted form with be deprecated in the near future (type 7 passwords will soon be deprecated message comes up in the console when you reboot the machine)
 The snippet below is a production based one, using accounting as well for ISE user profiles. Those commands are not necessary if you are not doing accounting.
 
-Starting Config:
+## Starting Config
 ```
 aaa authentication login default group TACACS-ISE local
 aaa authentication login OTHERGROUP group TACACS-ISE local
@@ -63,7 +69,8 @@ The use of command authorization in the default profile affects the console as w
 2) Provide command authorization configuration also for the CON profile both in the main section as well as the line console 0 section (thank you Joe!)
 Here are the two config snippets:
 
-Solution no 1:
+## Solution 1
+
 No console authorization, privilege level 15 is added to enter directly in privileged exec mode after console authentication.
 
 ```
@@ -94,7 +101,7 @@ line con 0
  stopbits 1
 ```
 
-Solution no 2:
+## Solution 2
 Keep console command authorization by adding all necessary commands both in the main and in the line console 0 sections:
 
 ```
@@ -130,4 +137,5 @@ line con 0
  stopbits 1
 ```
 
+## Conclusion
 This should be enough to make it work. It has been tested with 17.3.1a and 17.3.3 on ISR-44k routers. It should work on other devices as well.
