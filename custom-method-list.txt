@@ -1,0 +1,20 @@
+netconf-yang
+no aaa authentication login default local
+no aaa authorization exec default local
+
+tacacs server ISE-2
+address ipv4 126.162.1.145
+key Cisco123
+aaa group server tacacs+ ise
+server name ISE-2
+
+ip vrf forwarding Mgmt-vrf
+ip tacacs source-interface GigabitEthernet0/0
+
+aaa authentication login netconf-authn group ise local
+aaa authorization exec netconf-authz group ise local
+aaa new-model
+aaa session-id common
+
+yang-interfaces aaa authentication method-list netconf-authn
+yang-interfaces aaa authorization method-list netconf-authz
